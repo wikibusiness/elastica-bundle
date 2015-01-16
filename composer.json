@@ -1,0 +1,26 @@
+{
+    "name": "wikibusiness/elastica-bundle",
+    "type": "symfony-bundle",
+    "description": "Slim wrapper bundle for Elastica, when FOSElasticaBundle is too much.",
+    "keywords": ["elasticsearch", "elastica", "symfony"],
+    "homepage": "https://github.com/wikibusiness/elastica-bundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ulrik Nielsen",
+            "email": "un@wikibusiness.org"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/wikibusiness/elastica-bundle/issues"
+    },
+    "require": {
+        "php": ">=5.5",
+        "ruflin/Elastica": "~1.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "WB\\ElasticaBundle\\": ""
+        }
+    }
+}
