@@ -1,10 +1,24 @@
 <?php
+/*
+ * This file is part of the WB\ElasticaBundle package.
+ *
+ * (c) WikiBusiness <http://company.wikibusiness.org/>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace WB\ElasticaBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
+/**
+ * Class Configuration
+ *
+ * @package WB\ElasticaBundle
+ * @author  Ulrik Nielsen <un@wikibusiness.org>
+ */
 class Configuration implements ConfigurationInterface
 {
     /**
@@ -29,9 +43,9 @@ class Configuration implements ConfigurationInterface
         $rootNode = $treeBuilder->root('wb_elastica');
 
         $rootNode->children()
-            ->scalarNode('roundRobin')->defaultFalse()->end()
             ->booleanNode('log')->defaultValue($this->debug)->end()
             ->scalarNode('retryOnConflict')->defaultValue(0)->end()
+            ->scalarNode('roundRobin')->defaultFalse()->end()
             ->arrayNode('servers')
                 ->isRequired()
                 ->requiresAtLeastOneElement()

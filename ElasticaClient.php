@@ -2,7 +2,7 @@
 /*
  * This file is part of the WB\ElasticaBundle package.
  *
- * (c) Ulrik Nielsen un@wikibusiness.org
+ * (c) WikiBusiness <http://company.wikibusiness.org/>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -19,6 +19,7 @@ use Psr\Log\LoggerInterface;
  * Class ElasticaClient
  *
  * @package WB\ElasticaBundle
+ * @author  Ulrik Nielsen <un@wikibusiness.org>
  */
 class ElasticaClient extends Client
 {
@@ -28,27 +29,84 @@ class ElasticaClient extends Client
      */
     public function __construct(array $options, LoggerInterface $logger)
     {
+        if (isset($options['servers'])) {
+            $resolver = new OptionsResolver();
+            $this->globalOptions($resolver);
+
+            foreach ($options['servers'] as $index => $opts) {
+                $options['servers'][$index] = $resolver->resolve($opts);
+            }
+        }
+
         $resolver = new OptionsResolver();
-        $this->configureOptions($resolver);
+        $this->globalOptions($resolver);
 
-        $this->options = $resolver->resolve($options);
+        $options = $resolver->resolve($options);
 
-        parent::__construct($this->options);
+        parent::__construct($options);
         $this->setLogger($logger);
     }
 
     /**
-     * Specify default options.
+     * Specify global default options.
      *
      * @param OptionsResolver $resolver
      */
-    protected function configureOptions(OptionsResolver $resolver)
+    protected function globalOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'roundRobin'      => false,
+            'host'            => null,
             'log'             => false,
+            'path'            => null,
+            'persistent'      => true,
+            'port'            => null,
+            'proxy'           => null,
             'retryOnConflict' => 0,
-            'servers'         => []
+            'roundRobin'      => false,
+            'servers'         => [],
+            'timeout'         => null,
+            'transport'       => null,
+            'url'             => null,
         ]);
+
+        $resolver->setAllowedTypes('roundRobin', 'bool');
+        $resolver->setAllowedTypes('url', ['null', 'string']);
+        $this->setAllowedTypes($resolver);
+    }
+
+    /**
+     * Specify server default options.
+     *
+     * @param OptionsResolver $resolver
+     */
+    protected function serverOptions(OptionsResolver $resolver)
+    {
+        $resolver->setDefaults([
+            'host'            => null,
+            'path'            => null,
+            'persistent'      => true,
+            'port'            => null,
+            'proxy'           => null,
+            'timeout'         => null,
+            'transport'       => null,
+        ]);
+
+        $this->setAllowedTypes($resolver);
+    }
+
+    /**
+     * Set shared allowed server option types.
+     *
+     * @param OptionsResolver $resolver
+     */
+    protected function setAllowedTypes(OptionsResolver $resolver)
+    {
+        $resolver->setAllowedTypes('host', ['null', 'string']);
+        $resolver->setAllowedTypes('path', ['null', 'string']);
+        $resolver->setAllowedTypes('persistent', 'bool');
+        $resolver->setAllowedTypes('port', ['null', 'int']);
+        $resolver->setAllowedTypes('proxy', ['null', 'string']);
+        $resolver->setAllowedTypes('timeout', ['null', 'int']);
+        $resolver->setAllowedTypes('transport', ['null', 'string']);
     }
 }
