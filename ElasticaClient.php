@@ -24,6 +24,8 @@ use Psr\Log\LoggerInterface;
 class ElasticaClient extends Client
 {
     /**
+     * Constructor
+     *
      * @param array           $options
      * @param LoggerInterface $logger
      */
@@ -45,6 +47,21 @@ class ElasticaClient extends Client
 
         parent::__construct($options);
         $this->setLogger($logger);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function request($path, $method = Request::GET, $data = array(), array $query = array())
+    {
+        $start = microtime(true);
+        $response = parent::request($path, $method, $data, $query);
+
+        if (!defined('DEBUG') || (false === DEBUG)) {
+            $response->setQueryTime(microtime(true) - $start);
+        }
+
+        return $response;
     }
 
     /**
@@ -82,13 +99,13 @@ class ElasticaClient extends Client
     protected function serverOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'host'            => null,
-            'path'            => null,
-            'persistent'      => true,
-            'port'            => null,
-            'proxy'           => null,
-            'timeout'         => null,
-            'transport'       => null,
+            'host'       => null,
+            'path'       => null,
+            'persistent' => true,
+            'port'       => null,
+            'proxy'      => null,
+            'timeout'    => null,
+            'transport'  => null,
         ]);
 
         $this->setAllowedTypes($resolver);
