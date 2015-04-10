@@ -6,13 +6,25 @@
 
     <parameters>
         <parameter key="wb_elastica.client.class">WB\ElasticaBundle\ElasticaClient</parameter>
+        <parameter key="wb_elastica.logger.class">WB\ElasticaBundle\Logger\ElasticaLogger</parameter>
+        <parameter key="wb_elastica.data_collector.class">WB\ElasticaBundle\DataCollector\ElasticaDataCollector</parameter>
     </parameters>
 
     <services>
         <service id="wb_elastica.client" class="%wb_elastica.client.class%">
             <argument type="string">%wb_elastica.options%</argument>
-            <argument type="service" id="logger" />
+            <argument type="service" id="wb_elastica.logger" />
+        </service>
+
+        <service id="wb_elastica.logger" class="%wb_elastica.logger.class%">
+            <argument type="service" id="logger" on-invalid="null" />
+            <argument>%kernel.debug%</argument>
             <tag name="monolog.logger" channel="elastica" />
+        </service>
+
+        <service id="wb_elastica.data_collector" class="%wb_elastica.data_collector.class%">
+            <tag name="data_collector" template="WBElasticaBundle:Collector:elastica" id="elastica" />
+            <argument type="service" id="wb_elastica.logger" />
         </service>
     </services>
 </container>

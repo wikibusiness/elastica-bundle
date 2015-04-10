@@ -12,8 +12,10 @@ namespace WB\ElasticaBundle;
 
 use Elastica\Client;
 use Elastica\Connection;
+use Elastica\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Psr\Log\LoggerInterface;
+use WB\ElasticaBundle\Logger\ElasticaLogger;
 
 /**
  * Class ElasticaClient
@@ -52,14 +54,17 @@ class ElasticaClient extends Client
     /**
      * {@inheritdoc}
      */
-    public function request($path, $method = Request::GET, $data = array(), array $query = array())
+    public function request($path, $method = Request::GET, $data = [], array $query = [])
     {
-        $start = microtime(true);
+        $start    = microtime(true);
         $response = parent::request($path, $method, $data, $query);
+        $time     = microtime(true) - $start;
 
         if (!defined('DEBUG') || (false === DEBUG)) {
-            $response->setQueryTime(microtime(true) - $start);
+            $response->setQueryTime($time);
         }
+
+        $this->logQuery($path, $method, $data, $query, $time);
 
         return $response;
     }
@@ -125,5 +130,32 @@ class ElasticaClient extends Client
         $resolver->setAllowedTypes('proxy', ['null', 'string']);
         $resolver->setAllowedTypes('timeout', ['null', 'int']);
         $resolver->setAllowedTypes('transport', ['null', 'string']);
+    }
+
+    /**
+     * Log the query if we have an instance of ElasticaLogger.
+     *
+     * @param string $path
+     * @param string $method
+     * @param array  $data
+     * @param array  $query
+     * @param int    $time
+     */
+    private function logQuery($path, $method, $data, array $query, $time)
+    {
+        if (!$this->_logger or !$this->_logger instanceof ElasticaLogger) {
+            return;
+        }
+
+        $connection = $this->getLastRequest()->getConnection();
+
+        $connectionArray = [
+            'host'      => $connection->getHost(),
+            'port'      => $connection->getPort(),
+            'transport' => $connection->getTransport(),
+            'headers'   => $connection->hasConfig('headers') ? $connection->getConfig('headers') : [],
+        ];
+
+        $this->_logger->logQuery($path, $method, $data, $time, $connectionArray, $query);
     }
 }
